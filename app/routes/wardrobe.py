@@ -19,6 +19,9 @@ from app.core.database import (
     upload_wardrobe_image,
     upload_tryon_image
 )
+from app.components.ai.outfit_generator import generate_outfit_recommendations
+
+router = APIRouter()
 
 # Auto-categorization disabled for slim deployment
 
