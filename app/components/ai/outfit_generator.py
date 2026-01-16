@@ -54,11 +54,17 @@ async def generate_outfit_recommendations(
         num_looks=num_looks
     )
     
+    # Debug: Check API Key format
+    masked_key = f"{api_key[:8]}...{api_key[-4:]}" if api_key else "None"
+    print(f"[DEBUG] Using OpenAI API Key: {masked_key}", flush=True)
+    if not api_key.startswith("sk-"):
+        print("[WARNING] API Key does not start with 'sk-'. Check for quotes or whitespace.", flush=True)
+    
     try:
         print(f"[OUTFIT_GEN] Generating {num_looks} outfit recommendations for {event_type}...", flush=True)
         
         response = await client.chat.completions.create(
-            model="gpt-4o-mini-2024-07-18",
+            model="gpt-4o-mini",
             messages=[
                 {
                     "role": "system",
@@ -122,7 +128,9 @@ async def generate_outfit_recommendations(
         return outfits
         
     except Exception as e:
-        print(f"[ERROR] Failed to generate outfit recommendations: {e}", flush=True)
+        print(f"[ERROR] Failed to generate outfit recommendations: {type(e).__name__}: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
         raise e
 
 
