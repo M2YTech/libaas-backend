@@ -272,30 +272,36 @@ async def generate_outfit_recommendations_endpoint(
         
         # Get user profile from database
         # Get user profile from database
-        from app.core.database import get_user_by_id
-        user_profile = await get_user_by_id(user_id)
+        try:
+            from app.core.database import get_user_by_id
+            user_profile = await get_user_by_id(user_id)
+        except Exception as e:
+            print(f"[ERROR] Database fetch failed: {e}")
+            raise HTTPException(status_code=500, detail=f"Database Error: {str(e)}")
         
         if not user_profile:
             raise HTTPException(status_code=404, detail="User not found")
         
         # Ensure country is present (defaults to None in DB if not set)
         if "country" not in user_profile or not user_profile["country"]:
-             # Try to get from signup form if passed, otherwise default
-             # For now, we rely on what's in the DB.
              pass
         
         print(f"[USER] Gender: {user_profile.get('gender')}, Body Shape: {user_profile.get('body_shape')}, Country: {user_profile.get('country')}", flush=True)
         
         # Generate outfit recommendations using GPT-4o-mini
-        recommendations = await generate_outfit_recommendations(
-            user_profile=user_profile,
-            event_type=event_type,
-            event_venue=event_venue,
-            event_time=event_time,
-            weather=weather,
-            theme=theme,
-            num_looks=num_looks
-        )
+        try:
+            recommendations = await generate_outfit_recommendations(
+                user_profile=user_profile,
+                event_type=event_type,
+                event_venue=event_venue,
+                event_time=event_time,
+                weather=weather,
+                theme=theme,
+                num_looks=num_looks
+            )
+        except Exception as e:
+            print(f"[ERROR] AI generation failed: {e}")
+            raise HTTPException(status_code=500, detail=f"AI Service Error: {str(e)}")
         
         print(f"[SUCCESS] Generated {len(recommendations)} outfit recommendations", flush=True)
         
