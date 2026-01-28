@@ -202,11 +202,17 @@ async def update_profile(
     """
     from app.core.database import get_user_by_id, supabase
     
+    print(f"[DEBUG] Update request for user_id: {user_id}")
+    
     try:
+        if not user_id or user_id in ["null", "undefined"]:
+            raise HTTPException(status_code=400, detail="Invalid user_id provided")
+
         # Validate user exists
         user = await get_user_by_id(user_id)
         if not user:
-            raise HTTPException(status_code=404, detail="User not found")
+            print(f"[ERROR] User not found for ID: {user_id}")
+            raise HTTPException(status_code=404, detail=f"User with ID {user_id} not found")
         
         # Build update dictionary
         updates = {}
@@ -218,19 +224,32 @@ async def update_profile(
         if skin_tone: updates["skin_tone"] = skin_tone
         
         if not updates:
+            print("[INFO] No changes to update")
             return {"message": "No changes to update"}
             
+        print(f"[DEBUG] Updating user {user_id} with: {updates}")
+        
         # Update user record in database
         response = supabase.table("users").update(updates).eq("id", user_id).execute()
+        
+        if not response.data:
+            print(f"[ERROR] No data returned after update for user {user_id}")
+            raise HTTPException(status_code=500, detail="Database update failed - no record was modified")
+
+        print(f"[SUCCESS] Profile updated for user {user_id}")
         
         return JSONResponse(content={
             "success": True,
             "message": "Profile updated successfully",
-            "data": response.data[0] if response.data else None
+            "data": response.data[0]
         })
         
+    except HTTPException:
+        raise
     except Exception as e:
-        print(f"Profile update error: {e}")
+        print(f"Profile update error: {type(e).__name__}: {e}")
+        import traceback
+        traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
 
 
