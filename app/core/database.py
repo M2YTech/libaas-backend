@@ -12,9 +12,9 @@ load_dotenv(env_path)
 
 # Get from environment or use defaults
 SUPABASE_URL = os.getenv("SUPABASE_URL", "https://qsvvjrlmcguanqnewayh.supabase.co")
-# Use SERVICE_ROLE key for backend operations (bypasses RLS). 
-# Fallback to SUPABASE_KEY if SERVICE_ROLE is not explicitly set.
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY") or "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFzdnZqcmxtY2d1YW5xbmV3YXloIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc2NDkwMTUxMSwiZXhwIjoyMDgwNDc3NTExfQ.E09EiKATP3-N6edCnnM0LF0NwHgRordgOYydMDD0Zj4"
+SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
+if not SUPABASE_KEY:
+    raise ValueError("Missing SUPABASE_KEY or SUPABASE_SERVICE_ROLE_KEY in environment")
 
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
 
