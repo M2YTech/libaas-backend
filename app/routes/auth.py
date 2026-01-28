@@ -200,7 +200,8 @@ async def update_profile(
     """
     Update user profile details.
     """
-    from app.core.database import get_user_by_id, supabase
+    from app.core.database import get_user_by_id, get_supabase_client
+    supabase = get_supabase_client()
     
     print(f"[DEBUG] Update request for user_id: {user_id}")
     
@@ -230,6 +231,9 @@ async def update_profile(
         print(f"[DEBUG] Updating user {user_id} with: {updates}")
         
         # Update user record in database
+        supabase = get_supabase_client()
+        if not supabase:
+            raise HTTPException(status_code=500, detail="Database client not initialized")
         response = supabase.table("users").update(updates).eq("id", user_id).execute()
         
         if not response.data:
@@ -268,7 +272,8 @@ async def update_profile_photo(
     Returns:
         JSON response with new image URL
     """
-    from app.core.database import get_user_by_id, supabase
+    from app.core.database import get_user_by_id, get_supabase_client
+    supabase = get_supabase_client()
     from app.components.auth.utils import generate_unique_filename, validate_image_type
     
     try:

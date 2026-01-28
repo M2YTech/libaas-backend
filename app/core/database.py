@@ -6,21 +6,25 @@ import time
 import asyncio
 
 # Load .env from the backend directory
-backend_dir = Path(__file__).resolve().parent.parent
+backend_dir = Path(__file__).resolve().parent.parent.parent
 env_path = backend_dir / ".env"
 load_dotenv(env_path)
 
-# Get from environment or use defaults
-SUPABASE_URL = os.getenv("SUPABASE_URL", "https://qsvvjrlmcguanqnewayh.supabase.co")
-SUPABASE_KEY = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
-if not SUPABASE_KEY:
-    raise ValueError("Missing SUPABASE_KEY or SUPABASE_SERVICE_ROLE_KEY in environment")
-
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+_supabase_client = None
 
 def get_supabase_client() -> Client:
-    """Get Supabase client instance."""
-    return supabase
+    """Get or initialize Supabase client instance."""
+    global _supabase_client
+    if _supabase_client is None:
+        url = os.getenv("SUPABASE_URL", "https://qsvvjrlmcguanqnewayh.supabase.co")
+        key = os.getenv("SUPABASE_SERVICE_ROLE_KEY") or os.getenv("SUPABASE_KEY")
+        if not key:
+            print("⚠️ Warning: SUPABASE_KEY is missing. Database operations will fail.")
+            # We don't raise here to allow the app to boot/build even without keys
+            return None 
+        _supabase_client = create_client(url, key)
+    return _supabase_client
 
 async def upload_image_to_storage(file_bytes: bytes, filename: str, content_type: str) -> str:
     """
@@ -40,6 +44,9 @@ async def upload_image_to_storage(file_bytes: bytes, filename: str, content_type
     for attempt in range(max_retries):
         try:
             # Upload to Supabase Storage
+            supabase = get_supabase_client()
+            if not supabase:
+                raise ValueError("Supabase client not initialized")
             response = supabase.storage.from_("profile_images").upload(
                 path=filename,
                 file=file_bytes,
@@ -47,6 +54,7 @@ async def upload_image_to_storage(file_bytes: bytes, filename: str, content_type
             )
             
             # Get public URL
+            supabase = get_supabase_client()
             public_url = supabase.storage.from_("profile_images").get_public_url(filename)
             
             if attempt > 0:
@@ -77,6 +85,9 @@ async def create_user(user_data: dict) -> dict:
         Created user record
     """
     try:
+        supabase = get_supabase_client()
+        if not supabase:
+            raise ValueError("Supabase client not initialized")
         response = supabase.table("users").insert(user_data).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -94,6 +105,9 @@ async def get_user_by_email(email: str) -> dict | None:
         User record or None if not found
     """
     try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return None
         response = supabase.table("users").select("*").eq("email", email).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -111,6 +125,9 @@ async def get_user_by_id(user_id: str) -> dict | None:
         User record or None if not found
     """
     try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return None
         response = supabase.table("users").select("*").eq("id", user_id).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -139,6 +156,9 @@ async def upload_wardrobe_image(file_bytes: bytes, filename: str, content_type: 
     for attempt in range(max_retries):
         try:
             # Upload to Supabase Storage (wardrobe_images bucket)
+            supabase = get_supabase_client()
+            if not supabase:
+                raise ValueError("Supabase client not initialized")
             response = supabase.storage.from_("wardrobe_images").upload(
                 path=filename,
                 file=file_bytes,
@@ -221,6 +241,9 @@ async def create_wardrobe_item(item_data: dict) -> dict:
         Created wardrobe item record
     """
     try:
+        supabase = get_supabase_client()
+        if not supabase:
+            raise ValueError("Supabase client not initialized")
         response = supabase.table("wardrobe_items").insert(item_data).execute()
         return response.data[0] if response.data else None
     except Exception as e:
@@ -275,6 +298,9 @@ async def update_wardrobe_item(item_id: str, user_id: str, updates: dict) -> dic
         Updated wardrobe item
     """
     try:
+        supabase = get_supabase_client()
+        if not supabase:
+            return None
         response = supabase.table("wardrobe_items").update(updates).eq("id", item_id).eq("user_id", user_id).execute()
         return response.data[0] if response.data else None
     except Exception as e:
