@@ -43,6 +43,8 @@ app.include_router(wardrobe_router)
 async def root():
     return {
         "message": "Welcome to LibaasAI API",
+        "version": "1.0.2-debug",
+        "timestamp": "2026-01-28 15:35",
         "docs": "/docs",
         "health": "ok"
     }
