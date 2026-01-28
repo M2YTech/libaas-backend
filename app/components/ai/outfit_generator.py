@@ -1,15 +1,15 @@
 """
 AI-Powered Outfit Generator Service
-Uses GPT-4o-mini to generate detailed outfit recommendations
+Uses Groq (Llama 3.3 70B) to generate detailed outfit recommendations
 """
 import os
 import json
 from typing import List, Dict, Optional
-from openai import AsyncOpenAI
+from groq import AsyncGroq
 
-# Initialize OpenAI client (will be None if API key not set)
-api_key = os.getenv("OPENAI_API_KEY")
-client = AsyncOpenAI(api_key=api_key) if api_key else None
+# Initialize Groq client (will be None if API key not set)
+api_key = os.getenv("GROQ_API_KEY")
+client = AsyncGroq(api_key=api_key) if api_key else None
 
 
 async def generate_outfit_recommendations(
@@ -23,7 +23,7 @@ async def generate_outfit_recommendations(
     wardrobe_items: List[Dict] = []
 ) -> List[Dict]:
     """
-    Generate outfit recommendations using GPT-4o-mini
+    Generate outfit recommendations using Groq (Llama 3.3 70B)
     
     Args:
         user_profile: User profile data (body_shape, skin_tone, gender, etc.)
@@ -39,9 +39,9 @@ async def generate_outfit_recommendations(
         List of outfit recommendation dictionaries
     """
     
-    # Check if OpenAI client is available
+    # Check if Groq client is available
     if client is None:
-        raise Exception("OpenAI API key not configured. Please add OPENAI_API_KEY to your .env file.")
+        raise Exception("Groq API key not configured. Please add GROQ_API_KEY to your .env file.")
     
     # Build the prompt (GPT generates outfit requirements only, no wardrobe matching)
     prompt = build_outfit_prompt(
@@ -56,28 +56,28 @@ async def generate_outfit_recommendations(
     
     # Debug: Check API Key format
     masked_key = f"{api_key[:8]}...{api_key[-4:]}" if api_key else "None"
-    print(f"[DEBUG] Using OpenAI API Key: {masked_key}", flush=True)
-    if not api_key.startswith("sk-"):
-        print("[WARNING] API Key does not start with 'sk-'. Check for quotes or whitespace.", flush=True)
+    print(f"[DEBUG] Using Groq API Key: {masked_key}", flush=True)
+    if not api_key.startswith("gsk_"):
+        print("[WARNING] API Key does not start with 'gsk_'. Check for quotes or whitespace.", flush=True)
     
     try:
         print(f"[OUTFIT_GEN] Generating {num_looks} outfit recommendations for {event_type}...", flush=True)
         
         response = await client.chat.completions.create(
-            model="gpt-4o-mini",
+            model="llama-3.3-70b-versatile",
             messages=[
                 {
                     "role": "system",
-                    "content": "You are an expert personalized fashion stylist with deep knowledge of global and South Asian fashion, cultural dress codes, and modern styling. You provide detailed, practical outfit recommendations that are strictly tailored to the user's specific body shape, skin tone, height, and country context."
+                    "content": "You are an expert personalized fashion stylist with deep knowledge of global and South Asian fashion, cultural dress codes, and modern styling. You provide detailed, practical outfit recommendations that are strictly tailored to the user's specific body shape, skin tone, height, and country context. IMPORTANT: Always return the response in valid JSON format."
                 },
                 {
                     "role": "user",
                     "content": prompt
                 }
             ],
-            temperature=1.0,
+            temperature=0.7,
             max_tokens=3000,
-            response_format={"type": "json_object"}
+            stream=False
         )
         
         # Parse the response
@@ -143,7 +143,7 @@ def build_outfit_prompt(
     theme: str,
     num_looks: int
 ) -> str:
-    """Build the GPT-4o-mini prompt for outfit generation (requirements only)"""
+    """Build the Groq prompt for outfit generation (requirements only)"""
     
     # Extract user profile data
     gender = user_profile.get("gender", "male")

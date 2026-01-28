@@ -10,9 +10,11 @@ supabase>=2.3.0
 bcrypt>=4.1.0
 python-jose[cryptography]>=3.3.0
 
-# AI/ML (Slim - OpenAI Only)
+# AI/ML
 openai>=1.0.0
+groq>=0.4.2
 Pillow>=10.0.0
+
 
 # Utilities
 python-dotenv>=1.0.0

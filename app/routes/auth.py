@@ -187,6 +187,53 @@ async def get_profile(user_id: str):
         raise HTTPException(status_code=500, detail=f"Failed to fetch profile: {str(e)}")
 
 
+@router.post("/update-profile")
+async def update_profile(
+    user_id: str = Form(...),
+    name: Optional[str] = Form(None),
+    gender: Optional[str] = Form(None),
+    country: Optional[str] = Form(None),
+    height: Optional[str] = Form(None),
+    body_shape: Optional[str] = Form(None),
+    skin_tone: Optional[str] = Form(None)
+):
+    """
+    Update user profile details.
+    """
+    from app.core.database import get_user_by_id, supabase
+    
+    try:
+        # Validate user exists
+        user = await get_user_by_id(user_id)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Build update dictionary
+        updates = {}
+        if name: updates["name"] = name
+        if gender: updates["gender"] = gender
+        if country: updates["country"] = country
+        if height: updates["height"] = height
+        if body_shape: updates["body_shape"] = body_shape
+        if skin_tone: updates["skin_tone"] = skin_tone
+        
+        if not updates:
+            return {"message": "No changes to update"}
+            
+        # Update user record in database
+        response = supabase.table("users").update(updates).eq("id", user_id).execute()
+        
+        return JSONResponse(content={
+            "success": True,
+            "message": "Profile updated successfully",
+            "data": response.data[0] if response.data else None
+        })
+        
+    except Exception as e:
+        print(f"Profile update error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update profile: {str(e)}")
+
+
 @router.post("/update-profile-photo")
 async def update_profile_photo(
     user_id: str = Form(...),
