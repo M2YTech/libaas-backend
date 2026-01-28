@@ -328,3 +328,53 @@ async def update_profile_photo(
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to update profile photo: {str(e)}")
 
+
+@router.get("/style-insights/{user_id}")
+async def get_style_insights(user_id: str):
+    """
+    Generate AI-powered style insights for a user using Groq.
+    
+    Args:
+        user_id: User UUID
+    
+    Returns:
+        JSON response with personalized style recommendations
+    """
+    from app.core.database import get_user_by_id
+    from app.components.ai.style_insights import generate_style_insights
+    
+    try:
+        print(f"[STYLE_INSIGHTS] Generating insights for user {user_id}")
+        
+        # Get user profile
+        user_profile = await get_user_by_id(user_id)
+        if not user_profile:
+            raise HTTPException(status_code=404, detail="User not found")
+        
+        # Generate insights using Groq
+        result = await generate_style_insights(user_profile)
+        
+        if result["success"]:
+            print(f"[SUCCESS] Style insights generated for user {user_id}")
+            return JSONResponse(content={
+                "success": True,
+                "insights": result["insights"]
+            })
+        else:
+            print(f"[ERROR] Failed to generate insights: {result.get('error')}")
+            return JSONResponse(
+                content={
+                    "success": False,
+                    "message": "Failed to generate style insights",
+                    "insights": result["insights"]  # Return fallback insights
+                },
+                status_code=500
+            )
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"[ERROR] Style insights error: {e}")
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=f"Failed to generate style insights: {str(e)}")
