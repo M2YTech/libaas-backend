@@ -351,6 +351,8 @@ async def get_style_insights(user_id: str):
         if not user_profile:
             raise HTTPException(status_code=404, detail="User not found")
         
+        print(f"[STYLE_INSIGHTS] User: {user_profile.get('name')}, Country: {user_profile.get('country')}, Gender: {user_profile.get('gender')}", flush=True)
+        
         # Generate insights using Groq
         result = await generate_style_insights(user_profile)
         

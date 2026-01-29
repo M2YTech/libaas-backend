@@ -28,26 +28,23 @@ async def generate_style_insights(user_profile: Dict) -> Dict:
     """
     
     # Extract user details
-    gender = (user_profile.get("gender") or "").title()
-    body_shape = (user_profile.get("body_shape") or "").title()
-    skin_tone = (user_profile.get("skin_tone") or "").title()
-    country = user_profile.get("country") or ""
-    height = user_profile.get("height") or ""
+    gender = (user_profile.get("gender") or "Not specified").title()
+    body_shape = (user_profile.get("body_shape") or "Not specified").title()
+    skin_tone = (user_profile.get("skin_tone") or "Not specified").title()
+    country = user_profile.get("country") or "Pakistan"
+    height = user_profile.get("height") or "Not specified"
     
     # Build context
-    context_parts = []
-    if gender:
-        context_parts.append(f"Gender: {gender}")
-    if body_shape:
-        context_parts.append(f"Body Shape: {body_shape}")
-    if skin_tone:
-        context_parts.append(f"Skin Tone: {skin_tone}")
-    if country:
-        context_parts.append(f"Location: {country}")
-    if height:
-        context_parts.append(f"Height: {height}")
+    context_parts = [
+        f"Gender: {gender}",
+        f"Body Shape: {body_shape}",
+        f"Skin Tone: {skin_tone}",
+        f"Location: {country}",
+        f"Height: {height}"
+    ]
     
-    user_context = ", ".join(context_parts) if context_parts else "Limited profile information"
+    user_context = ", ".join(context_parts)
+    print(f"[STYLE_INSIGHTS] Context: {user_context}", flush=True)
     
     # Create prompt
     prompt = f"""You are a professional fashion stylist and personal shopper. Generate personalized style insights for a user with the following profile:
