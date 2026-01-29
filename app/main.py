@@ -37,7 +37,7 @@ app.add_middleware(
 
 # Include routers
 app.include_router(auth_router, prefix="/auth", tags=["Authentication"])
-app.include_router(wardrobe_router)
+app.include_router(wardrobe_router, prefix="/wardrobe", tags=["Wardrobe"])
 
 @app.get("/")
 async def root():
