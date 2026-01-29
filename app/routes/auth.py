@@ -178,6 +178,10 @@ async def get_profile(user_id: str):
         # Add recommendations to response
         user["recommendations"] = recommendations
         
+        # Populate style_insights from persisted storage if available
+        if "clip_insights" in user and user["clip_insights"] and "persisted_style_insights" in user["clip_insights"]:
+            user["style_insights"] = user["clip_insights"]["persisted_style_insights"]
+        
         return user
         
     except HTTPException:
