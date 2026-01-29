@@ -358,6 +358,18 @@ async def get_style_insights(user_id: str):
         
         if result["success"]:
             print(f"[SUCCESS] Style insights generated for user {user_id}")
+            
+            # Save insights to database for persistence
+            try:
+                from app.core.database import get_supabase_client
+                supabase = get_supabase_client()
+                if supabase:
+                    supabase.table("users").update({"style_insights": result["insights"]}).eq("id", user_id).execute()
+                    print(f"[DATABASE] Saved style insights for user {user_id}")
+            except Exception as db_err:
+                print(f"[DATABASE_ERROR] Failed to save style insights: {db_err}")
+                # We still return the insights even if saving failed
+                
             return JSONResponse(content={
                 "success": True,
                 "insights": result["insights"]

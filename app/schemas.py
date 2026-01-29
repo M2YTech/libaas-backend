@@ -39,6 +39,7 @@ class UserResponse(BaseModel):
     skin_tone: Optional[str] = None
     image_url: Optional[str] = None
     clip_insights: Optional[dict] = None
+    style_insights: Optional[dict] = None
     created_at: Optional[datetime] = None
 
 class SignupResponse(BaseModel):
