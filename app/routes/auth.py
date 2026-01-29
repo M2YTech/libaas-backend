@@ -361,11 +361,12 @@ async def get_style_insights(user_id: str):
                 "insights": result["insights"]
             })
         else:
-            print(f"[ERROR] Failed to generate insights: {result.get('error')}")
+            error_msg = result.get('error', 'Unknown error')
+            print(f"[ERROR] Failed to generate insights: {error_msg}")
             return JSONResponse(
                 content={
                     "success": False,
-                    "message": "Failed to generate style insights",
+                    "message": f"Failed to generate style insights: {error_msg}",
                     "insights": result["insights"]  # Return fallback insights
                 },
                 status_code=500
