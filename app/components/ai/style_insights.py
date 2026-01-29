@@ -9,7 +9,12 @@ import json
 from typing import Dict, Optional
 
 # Initialize Groq client
-groq_client = AsyncGroq(api_key=os.getenv("GROQ_API_KEY"))
+api_key = os.getenv("GROQ_API_KEY")
+if api_key:
+    # Sanitize key
+    api_key = api_key.strip().replace('"', '').replace("'", "")
+
+groq_client = AsyncGroq(api_key=api_key)
 
 async def generate_style_insights(user_profile: Dict) -> Dict:
     """

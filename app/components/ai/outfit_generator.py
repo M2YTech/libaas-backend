@@ -9,6 +9,10 @@ from groq import AsyncGroq
 
 # Initialize Groq client (will be None if API key not set)
 api_key = os.getenv("GROQ_API_KEY")
+if api_key:
+    # Sanitize key (remove accidental quotes or whitespace from environment variables)
+    api_key = api_key.strip().replace('"', '').replace("'", "")
+
 client = AsyncGroq(api_key=api_key) if api_key else None
 
 
@@ -81,8 +85,16 @@ async def generate_outfit_recommendations(
         )
         
         # Parse the response
-        content = response.choices[0].message.content
-        recommendations_data = json.loads(content)
+        content = response.choices[0].message.content.strip()
+        
+        # Robust JSON extraction (in case model adds text before/after JSON)
+        try:
+            if "{" in content:
+                content = content[content.find("{"):content.rfind("}")+1]
+            recommendations_data = json.loads(content)
+        except json.JSONDecodeError as je:
+            print(f"[ERROR] JSON Decode failed. Raw Content snippet: {content[:100]}...", flush=True)
+            raise Exception(f"Failed to parse AI response as JSON: {str(je)}")
         
         print(f"[SUCCESS] Generated {len(recommendations_data.get('outfits', []))} outfit recommendations", flush=True)
         

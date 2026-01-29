@@ -11,9 +11,9 @@ from app.components.ai.clip_insights import analyze_image
 async def lifespan(app: FastAPI):
     """Server startup and shutdown."""
     print("Starting LibaasAI Backend...")
-    print("AI Insights: Using GPT-4o-mini (API) for image analysis.")
-    print("Fashion Recommendations: Using lightweight rule-based engine.")
-    print("Outfit Generator: Using GPT-4o-mini (API).")
+    print("AI Insights (Vision): Using GPT-4o-mini (API).")
+    print("Style Insights & Outfit Generator: Using Groq (Llama 3.3).")
+    print("AI Stack: Groq + OpenAI Vision.")
     print("Server startup complete!")
     print("API docs available at: /docs")
     yield
