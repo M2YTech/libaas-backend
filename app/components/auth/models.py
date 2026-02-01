@@ -20,6 +20,7 @@ class UserInDB(BaseModel):
     skin_tone: Optional[str] = None
     image_url: Optional[str] = None
     clip_insights: Optional[dict] = None
+    theme: Optional[str] = "light"
     created_at: datetime
 
 class UserPublic(BaseModel):
@@ -34,17 +35,5 @@ class UserPublic(BaseModel):
     skin_tone: Optional[str] = None
     image_url: Optional[str] = None
     clip_insights: Optional[dict] = None
+    theme: Optional[str] = "light"
     created_at: datetime
-
-
-
-
-
-
-
-
-
-
-
-
-

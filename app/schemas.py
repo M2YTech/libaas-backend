@@ -22,6 +22,7 @@ class UserBase(BaseModel):
     country: Optional[str] = None
     body_shape: Optional[str] = None
     skin_tone: Optional[str] = None
+    theme: Optional[str] = "light"
 
 class UserCreate(UserBase):
     """Schema for creating a new user."""
@@ -40,6 +41,7 @@ class UserResponse(BaseModel):
     image_url: Optional[str] = None
     clip_insights: Optional[dict] = None
     style_insights: Optional[dict] = None
+    theme: Optional[str] = "light"
     created_at: Optional[datetime] = None
 
 class SignupResponse(BaseModel):
@@ -60,20 +62,10 @@ class LoginResponse(BaseModel):
     name: str
     email: str
 
+class ThemeUpdateRequest(BaseModel):
+    """Schema for theme update request."""
+    theme: str = Field(..., pattern="^(light|dark)$")
+
 class ErrorResponse(BaseModel):
     """Error response schema."""
     detail: str
-
-
-
-
-
-
-
-
-
-
-
-
-
-

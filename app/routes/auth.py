@@ -7,8 +7,8 @@ from fastapi.responses import JSONResponse
 from typing import Optional
 import json
 
-from app.core.database import create_user, get_user_by_email, upload_image_to_storage
-from app.schemas import SignupResponse, LoginRequest, LoginResponse, ClipInsights
+from app.core.database import create_user, get_user_by_email, upload_image_to_storage, get_user_by_id, get_supabase_client
+from app.schemas import SignupResponse, LoginRequest, LoginResponse, ClipInsights, ThemeUpdateRequest
 from app.components.auth.utils import hash_password, verify_password, generate_unique_filename, validate_image_type
 from app.components.ai.clip_insights import analyze_image
 
@@ -407,3 +407,25 @@ async def get_style_insights(user_id: str):
         import traceback
         traceback.print_exc()
         raise HTTPException(status_code=500, detail=f"Failed to generate style insights: {str(e)}")
+@router.patch("/update-theme/{user_id}")
+async def update_theme(user_id: str, request: ThemeUpdateRequest):
+    """
+    Update user's theme preference.
+    """
+    try:
+        supabase = get_supabase_client()
+        if not supabase:
+            raise HTTPException(status_code=500, detail="Database client not initialized")
+        
+        response = supabase.table("users").update({"theme": request.theme}).eq("id", user_id).execute()
+        
+        if not response.data:
+            raise HTTPException(status_code=404, detail="User not found")
+            
+        return {"success": True, "theme": request.theme}
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        print(f"Theme update error: {e}")
+        raise HTTPException(status_code=500, detail=f"Failed to update theme: {str(e)}")
